@@ -1,0 +1,31 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: hetu-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: ry-vue
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - hetu_mysql:/var/lib/mysql
+      - ./sql/ry_20260417.sql:/docker-entrypoint-initdb.d/01-ruoyi.sql:ro
+      - ./sql/hetu.sql:/docker-entrypoint-initdb.d/02-hetu.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ppassword"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7.4-alpine
+    container_name: hetu-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - hetu_redis:/data
+volumes:
+  hetu_mysql:
+  hetu_redis:
