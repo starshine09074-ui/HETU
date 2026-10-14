@@ -149,8 +149,8 @@ INSERT IGNORE INTO sys_user_role(user_id,role_id) VALUES(114,14),(115,12),(116,1
 INSERT IGNORE INTO sys_role_menu(role_id,menu_id)
 SELECT r.role_id,m.menu_id FROM sys_role r JOIN sys_menu m ON m.menu_id IN (2000,2001,2004,2007,2010)
 WHERE r.role_id BETWEEN 10 AND 13;
--- Product managers plan projects, requirements, and tasks.
-INSERT IGNORE INTO sys_role_menu(role_id,menu_id) VALUES (10,2002),(10,2003),(10,2005),(10,2006),(10,2008),(10,2009);
+-- Product managers own requirements; directors assign implementation tasks.
+INSERT IGNORE INTO sys_role_menu(role_id,menu_id) VALUES (10,2005),(10,2006);
 -- Directors have full workspace authority.
 INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT 11,menu_id FROM sys_menu WHERE menu_id BETWEEN 2000 AND 2013;
 -- Developers work on tasks and submit defects; testers triage and update defects.

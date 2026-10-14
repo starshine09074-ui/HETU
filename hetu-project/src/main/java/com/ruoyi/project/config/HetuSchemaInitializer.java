@@ -60,10 +60,15 @@ public class HetuSchemaInitializer implements ApplicationRunner {
         String[] names={"发布计划新增","发布排期修改","测试提交发布","执行版本发布","产品验证发布","手动关闭发布计划"};
         for(int i=0;i<perms.length;i++){int menuId=2014+i;jdbc.update("INSERT IGNORE INTO sys_menu(menu_id,menu_name,parent_id,order_num,path,component,is_frame,is_cache,menu_type,visible,status,perms,icon,create_by,create_time,update_by,update_time,remark) VALUES(?,?,2000,?, '#','',1,0,'F','0','0',?,'#','admin',NOW(),'','', '')",menuId,names[i],14+i,perms[i]);}
         jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT role_id,2000 FROM sys_role WHERE role_key IN ('hetu_ops')");
-        jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT role_id,menu_id FROM sys_role JOIN sys_menu ON sys_menu.menu_id BETWEEN 2001 AND 2013 WHERE role_key='hetu_ops'");
+        jdbc.update("DELETE rm FROM sys_role_menu rm JOIN sys_role r ON r.role_id=rm.role_id WHERE r.role_key='hetu_ops' AND rm.menu_id BETWEEN 2002 AND 2013");
+        jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT role_id,menu_id FROM sys_role JOIN sys_menu ON sys_menu.menu_id IN (2001,2004,2007,2010) WHERE role_key='hetu_ops'");
         jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT r.role_id,m.menu_id FROM sys_role r JOIN sys_menu m ON m.menu_id IN (2014,2015,2017,2019) WHERE r.role_key='hetu_ops'");
-        jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT r.role_id,m.menu_id FROM sys_role r JOIN sys_menu m ON m.menu_id IN (2015,2016) WHERE r.role_key='hetu_tester'");
-        jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT r.role_id,m.menu_id FROM sys_role r JOIN sys_menu m ON m.menu_id IN (2014,2015,2018,2019) WHERE r.role_key='hetu_pm'");
+        jdbc.update("DELETE rm FROM sys_role_menu rm JOIN sys_role r ON r.role_id=rm.role_id WHERE r.role_key='hetu_ops' AND rm.menu_id IN (2016,2018)");
+        jdbc.update("DELETE rm FROM sys_role_menu rm JOIN sys_role r ON r.role_id=rm.role_id WHERE r.role_key='hetu_tester' AND rm.menu_id=2015");
+        jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT r.role_id,m.menu_id FROM sys_role r JOIN sys_menu m ON m.menu_id=2016 WHERE r.role_key='hetu_tester'");
+        jdbc.update("DELETE rm FROM sys_role_menu rm JOIN sys_role r ON r.role_id=rm.role_id WHERE r.role_key='hetu_pm' AND rm.menu_id IN (2014,2015,2019)");
+        jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT r.role_id,m.menu_id FROM sys_role r JOIN sys_menu m ON m.menu_id=2018 WHERE r.role_key='hetu_pm'");
+        jdbc.update("DELETE rm FROM sys_role_menu rm JOIN sys_role r ON r.role_id=rm.role_id WHERE r.role_key='hetu_pm' AND rm.menu_id IN (2002,2003,2008,2009)");
         jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT role_id,2013 FROM sys_role WHERE role_key IN ('hetu_pm','hetu_tester')");
         jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT role_id,2012 FROM sys_role WHERE role_key='hetu_developer'");
         jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT role_id,2011 FROM sys_role WHERE role_key='hetu_pm'");
