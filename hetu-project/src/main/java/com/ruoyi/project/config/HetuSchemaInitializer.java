@@ -72,6 +72,8 @@ public class HetuSchemaInitializer implements ApplicationRunner {
         jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT role_id,2013 FROM sys_role WHERE role_key IN ('hetu_pm','hetu_tester')");
         jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT role_id,2012 FROM sys_role WHERE role_key='hetu_developer'");
         jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT role_id,2011 FROM sys_role WHERE role_key='hetu_pm'");
-        jdbc.update("INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT r.role_id,m.menu_id FROM sys_role r JOIN sys_menu m ON m.menu_id BETWEEN 2014 AND 2019 WHERE r.role_key='hetu_director'");
+        // Directors assign delivery work; release planning, testing, publishing,
+        // verification, and closure belong to ops, testers, and product managers.
+        jdbc.update("DELETE rm FROM sys_role_menu rm JOIN sys_role r ON r.role_id=rm.role_id WHERE r.role_key='hetu_director' AND rm.menu_id BETWEEN 2014 AND 2019");
     }
 }
