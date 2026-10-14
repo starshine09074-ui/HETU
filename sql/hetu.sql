@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS hetu_task_progress (
 CREATE TABLE IF NOT EXISTS hetu_bug (
   bug_id BIGINT NOT NULL AUTO_INCREMENT, task_id BIGINT, title VARCHAR(180) NOT NULL, bug_type VARCHAR(24) NOT NULL DEFAULT 'FUNCTIONAL',
   severity VARCHAR(16) NOT NULL DEFAULT 'MEDIUM', description TEXT, steps TEXT, assignee VARCHAR(64),
-  status VARCHAR(20) NOT NULL DEFAULT 'NEW', root_cause VARCHAR(32) NOT NULL DEFAULT 'PRODUCT_DEFECT', score_points INT NOT NULL DEFAULT 0,
+  status VARCHAR(20) NOT NULL DEFAULT 'NEW', root_cause VARCHAR(32) NOT NULL DEFAULT 'PRODUCT_DEFECT',
+  score_hours DECIMAL(8,2) NOT NULL DEFAULT 0.00,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY(bug_id), KEY idx_hetu_bug_task(task_id), KEY idx_hetu_bug_status(status)
@@ -46,8 +47,8 @@ CREATE TABLE IF NOT EXISTS hetu_bug (
 SET @has_root_cause = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='hetu_bug' AND COLUMN_NAME='root_cause');
 SET @sql = IF(@has_root_cause=0, 'ALTER TABLE hetu_bug ADD COLUMN root_cause VARCHAR(32) NOT NULL DEFAULT ''PRODUCT_DEFECT''', 'SELECT 1');
 PREPARE hetu_stmt FROM @sql; EXECUTE hetu_stmt; DEALLOCATE PREPARE hetu_stmt;
-SET @has_score_points = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='hetu_bug' AND COLUMN_NAME='score_points');
-SET @sql = IF(@has_score_points=0, 'ALTER TABLE hetu_bug ADD COLUMN score_points INT NOT NULL DEFAULT 0', 'SELECT 1');
+SET @has_score_hours = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='hetu_bug' AND COLUMN_NAME='score_hours');
+SET @sql = IF(@has_score_hours=0, 'ALTER TABLE hetu_bug ADD COLUMN score_hours DECIMAL(8,2) NOT NULL DEFAULT 0.00', 'SELECT 1');
 PREPARE hetu_stmt FROM @sql; EXECUTE hetu_stmt; DEALLOCATE PREPARE hetu_stmt;
 
 CREATE TABLE IF NOT EXISTS hetu_comment (

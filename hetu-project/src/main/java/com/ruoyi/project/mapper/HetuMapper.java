@@ -2,6 +2,7 @@ package com.ruoyi.project.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -29,12 +30,13 @@ public interface HetuMapper {
     @Options(useGeneratedKeys=true,keyProperty="id") int addRequirement(Map<String,Object> row);
     @Update("UPDATE hetu_requirement SET title=#{title},content=#{content},status=#{status},owner=#{owner},release_version=#{version},project_id=#{projectId} WHERE requirement_id=#{id}")
     int updateRequirement(Map<String,Object> row);
-    @Select("SELECT bug_id id, task_id taskId, title, bug_type type, severity, description, steps, assignee, status, root_cause rootCause, score_points scorePoints, created_at createdAt FROM hetu_bug ORDER BY FIELD(status,'NEW','IN_PROGRESS','VERIFYING','CLOSED'), created_at DESC")
+    @Select("SELECT bug_id id, task_id taskId, title, bug_type type, severity, description, steps, assignee, status, root_cause rootCause, score_hours scoreHours, created_at createdAt FROM hetu_bug ORDER BY FIELD(status,'NEW','IN_PROGRESS','VERIFYING','CLOSED'), created_at DESC")
     List<Map<String,Object>> bugs();
-    @Insert("INSERT INTO hetu_bug(task_id,title,bug_type,severity,description,steps,assignee,status,root_cause,score_points) VALUES(#{taskId},#{title},#{type},#{severity},#{description},#{steps},#{assignee},#{status},#{rootCause},#{scorePoints})")
+    @Insert("INSERT INTO hetu_bug(task_id,title,bug_type,severity,description,steps,assignee,status,root_cause,score_hours) VALUES(#{taskId},#{title},#{type},#{severity},#{description},#{steps},#{assignee},#{status},#{rootCause},#{scoreHours})")
     @Options(useGeneratedKeys=true,keyProperty="id") int addBug(Map<String,Object> row);
-    @Update("UPDATE hetu_bug SET task_id=#{taskId},title=#{title},bug_type=#{type},severity=#{severity},description=#{description},steps=#{steps},assignee=#{assignee},status=#{status},root_cause=#{rootCause},score_points=#{scorePoints} WHERE bug_id=#{id}")
+    @Update("UPDATE hetu_bug SET task_id=#{taskId},title=#{title},bug_type=#{type},severity=#{severity},description=#{description},steps=#{steps},assignee=#{assignee},status=#{status},root_cause=#{rootCause},score_hours=#{scoreHours} WHERE bug_id=#{id}")
     int updateBug(Map<String,Object> row);
+    @Select("SELECT estimate_hours FROM hetu_task WHERE task_id=#{taskId}") BigDecimal taskEstimateHours(@Param("taskId") long taskId);
     @Insert("INSERT INTO hetu_attachment(entity_type,entity_id,file_name,storage_path,mime_type,file_size,uploaded_by) VALUES(#{entityType},#{entityId},#{fileName},#{storagePath},#{mimeType},#{fileSize},#{uploadedBy})")
     @Options(useGeneratedKeys=true,keyProperty="id") int addAttachment(Map<String,Object> row);
     @Select("SELECT progress FROM hetu_task WHERE task_id=#{id} FOR UPDATE") Integer currentProgress(@Param("id") long id);

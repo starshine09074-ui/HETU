@@ -2,6 +2,8 @@ package com.ruoyi.project.controller;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Set;
 import java.util.UUID;
 import java.util.LinkedHashMap;
@@ -70,7 +72,7 @@ public class HetuController {
         required(row,"title"); row.putIfAbsent("type","FUNCTIONAL"); row.putIfAbsent("severity","MEDIUM"); row.putIfAbsent("status","NEW"); row.putIfAbsent("rootCause","PRODUCT_DEFECT"); scoreBug(row); mapper.addBug(row); audit("bug",id(row),"CREATE",String.valueOf(row.get("title"))); return AjaxResult.success(row);
     }
     @PutMapping("/bugs/{id}") @PreAuthorize("@ss.hasPermi('hetu:bug:edit')") public AjaxResult updateBug(@PathVariable long id,@RequestBody Map<String,Object> row) {
-        row.put("id",id); required(row,"title"); row.putIfAbsent("rootCause","PRODUCT_DEFECT"); scoreBug(row); int changed=mapper.updateBug(row); if(changed>0) audit("bug",id,"UPDATE",String.valueOf(row.get("status"))+", score="+row.get("scorePoints")); return changed>0?AjaxResult.success():AjaxResult.error("缺陷不存在");
+        row.put("id",id); required(row,"title"); row.putIfAbsent("rootCause","PRODUCT_DEFECT"); scoreBug(row); int changed=mapper.updateBug(row); if(changed>0) audit("bug",id,"UPDATE",String.valueOf(row.get("status"))+", scoreHours="+row.get("scoreHours")); return changed>0?AjaxResult.success():AjaxResult.error("缺陷不存在");
     }
     @PostMapping(value="/attachments",consumes=MediaType.MULTIPART_FORM_DATA_VALUE) @PreAuthorize("@ss.hasPermi('hetu:attachment:upload')")
     public AjaxResult uploadImage(@RequestParam String entityType,@RequestParam long entityId,@RequestParam("file") MultipartFile file) throws java.io.IOException {
@@ -85,15 +87,28 @@ public class HetuController {
         mapper.addAttachment(row); audit(entityType,entityId,"ATTACH",String.valueOf(file.getOriginalFilename())); row.put("url",row.get("storagePath")); return AjaxResult.success(row);
     }
     private static void required(Map<String,Object> row,String key) { if(row.get(key)==null||String.valueOf(row.get(key)).isBlank()) throw new IllegalArgumentException(key+" 不能为空"); }
-    private static void scoreBug(Map<String,Object> row) {
+    private void scoreBug(Map<String,Object> row) {
         String cause=String.valueOf(row.get("rootCause"));
         if(!Set.of("PRODUCT_DEFECT","REQUIREMENT_CHANGE","ENVIRONMENT","DUPLICATE","NOT_REPRODUCIBLE").contains(cause)) throw new IllegalArgumentException("无效的缺陷归因");
         String severity=String.valueOf(row.get("severity"));
         if(!Set.of("CRITICAL","HIGH","MEDIUM","LOW").contains(severity)) throw new IllegalArgumentException("无效的缺陷等级");
-        int points=0;
-        if("CLOSED".equals(row.get("status")) && "PRODUCT_DEFECT".equals(cause)) points=switch(severity) { case "CRITICAL" -> 5; case "HIGH" -> 3; case "MEDIUM" -> 1; default -> 0; };
-        row.put("scorePoints",-points);
+        BigDecimal deduction=BigDecimal.ZERO;
+        if("CLOSED".equals(row.get("status"))) {
+            if("PRODUCT_DEFECT".equals(cause)) {
+                Object taskId=row.get("taskId");
+                Long taskKey=taskId instanceof Number taskNumber?taskNumber.longValue():parseTaskId(taskId);
+                if(taskKey==null) throw new IllegalArgumentException("开发类 Bug 关闭前必须关联开发任务，才能按任务预估工时计算扣减");
+                BigDecimal estimate=mapper.taskEstimateHours(taskKey);
+                if(estimate==null) throw new IllegalArgumentException("关联的开发任务不存在，无法计算扣减工时");
+                BigDecimal ratio=switch(severity) { case "CRITICAL" -> new BigDecimal("0.50"); case "HIGH" -> new BigDecimal("0.30"); case "MEDIUM" -> new BigDecimal("0.10"); default -> BigDecimal.ZERO; };
+                deduction=estimate.multiply(ratio);
+            } else if("REQUIREMENT_CHANGE".equals(cause)||"ENVIRONMENT".equals(cause)) {
+                deduction=switch(severity) { case "CRITICAL" -> new BigDecimal("5"); case "HIGH" -> new BigDecimal("3"); case "MEDIUM" -> BigDecimal.ONE; default -> BigDecimal.ZERO; };
+            }
+        }
+        row.put("scoreHours",deduction.setScale(2,RoundingMode.HALF_UP).negate());
     }
+    private static Long parseTaskId(Object value) { try { return value==null?null:Long.valueOf(String.valueOf(value)); } catch(NumberFormatException ex) { return null; } }
     private static long id(Map<String,Object> row) { Object id=row.get("id"); return id instanceof Number n?n.longValue():0L; }
     private void audit(String type,long id,String action,String detail) { mapper.log(SecurityUtils.getUsername(),type,id,action,detail); }
 }
