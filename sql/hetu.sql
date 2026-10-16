@@ -122,28 +122,16 @@ VALUES (2001,'项目查看',2000,1,'#','',1,0,'F','0','0','hetu:project:list','#
 (2013,'附件上传',2000,13,'#','',1,0,'F','0','0','hetu:attachment:upload','#','admin',NOW(),'','', '');
 INSERT IGNORE INTO sys_role_menu(role_id,menu_id) SELECT 1,menu_id FROM sys_menu WHERE menu_id BETWEEN 2000 AND 2013;
 
--- Four working roles with separate demo accounts (password for each: admin123).
+-- Business roles. Local demo accounts are kept in sql/hetu_demo_users.sql.
 INSERT IGNORE INTO sys_role(role_id,role_name,role_key,role_sort,data_scope,status,del_flag,create_by,create_time,remark) VALUES
 (10,'产品经理','hetu_pm',10,'1','0','0','admin',NOW(),'负责项目规划、需求与交付范围'),
 (11,'技术总监','hetu_director',11,'1','0','0','admin',NOW(),'负责技术交付与团队工作流'),
 (12,'开发人员','hetu_developer',12,'1','0','0','admin',NOW(),'负责研发任务与缺陷修复'),
 (13,'测试人员','hetu_tester',13,'1','0','0','admin',NOW(),'负责测试验收与缺陷跟踪');
 
-INSERT IGNORE INTO sys_user(user_id,dept_id,user_name,nick_name,user_type,email,phonenumber,sex,password,status,del_flag,create_by,create_time,remark) VALUES
-(110,103,'pm','产品经理','00','','','0','$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2','0','0','admin',NOW(),'河图演示账号'),
-(111,103,'director','技术总监','00','','','0','$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2','0','0','admin',NOW(),'河图演示账号'),
-(112,103,'developer','开发人员','00','','','0','$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2','0','0','admin',NOW(),'河图演示账号'),
-(113,103,'tester','测试人员','00','','','0','$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2','0','0','admin',NOW(),'河图演示账号');
-INSERT IGNORE INTO sys_user_role(user_id,role_id) VALUES (110,10),(111,11),(112,12),(113,13);
-
--- Operations and two distinct developer identities for end-to-end workflow demos.
+-- Operations role.
 INSERT IGNORE INTO sys_role(role_id,role_name,role_key,role_sort,data_scope,status,del_flag,create_by,create_time,remark)
 VALUES (14,'运维工程师','hetu_ops',14,'1','0','0','admin',NOW(),'负责发布与版本维护');
-INSERT IGNORE INTO sys_user(user_id,dept_id,user_name,nick_name,user_type,email,phonenumber,sex,password,status,del_flag,create_by,create_time,remark) VALUES
-(114,103,'ops','运维工程师','00','','','0','$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2','0','0','admin',NOW(),'河图演示账号'),
-(115,103,'frontend','前端开发','00','','','0','$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2','0','0','admin',NOW(),'河图演示账号'),
-(116,103,'backend','后端开发','00','','','0','$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2','0','0','admin',NOW(),'河图演示账号');
-INSERT IGNORE INTO sys_user_role(user_id,role_id) VALUES(114,14),(115,12),(116,12);
 
 -- Every role can open the workspace and read the shared work inventory.
 INSERT IGNORE INTO sys_role_menu(role_id,menu_id)

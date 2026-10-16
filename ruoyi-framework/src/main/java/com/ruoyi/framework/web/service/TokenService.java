@@ -3,7 +3,9 @@ package com.ruoyi.framework.web.service;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,15 @@ public class TokenService
     // 令牌秘钥
     @Value("${token.secret}")
     private String secret;
+
+    @PostConstruct
+    public void validateSigningSecret()
+    {
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 64)
+        {
+            throw new IllegalStateException("HETU_TOKEN_SECRET must contain at least 64 UTF-8 bytes for HS512");
+        }
+    }
 
     // 令牌有效期（默认30分钟）
     @Value("${token.expireTime}")

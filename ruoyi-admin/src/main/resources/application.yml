@@ -34,7 +34,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.ruoyi: debug
+    com.ruoyi: info
     org.springframework: warn
 
 # 用户配置
@@ -67,7 +67,7 @@ spring:
   devtools:
     restart:
       # 热部署开关
-      enabled: true
+      enabled: false
   data:
     # redis 配置
     redis:
@@ -97,7 +97,7 @@ token:
   # 令牌自定义标识
   header: Authorization
   # 令牌密钥
-  secret: abcdefghijklmnopqrstuvwxyz
+  secret: ${HETU_TOKEN_SECRET}
   # 令牌有效期（默认30分钟）
   expireTime: 30
 
@@ -119,9 +119,10 @@ pagehelper:
 # Springdoc配置
 springdoc:
   api-docs:
+    enabled: ${HETU_SWAGGER_ENABLED:false}
     path: /v3/api-docs
   swagger-ui:
-    enabled: true
+    enabled: ${HETU_SWAGGER_ENABLED:false}
     path: /swagger-ui.html
     tags-sorter: alpha
   group-configs:
@@ -129,6 +130,11 @@ springdoc:
       display-name: '测试模块'
       paths-to-match: '/**'
       packages-to-scan: com.ruoyi.web.controller.tool
+
+# 仅允许受信任的前端来源；生产 profile 要求显式设置 HETU_CORS_ALLOWED_ORIGINS。
+hetu:
+  cors:
+    allowed-origins: ${HETU_CORS_ALLOWED_ORIGINS:http://localhost:5173}
 
 # 防盗链配置
 referer:

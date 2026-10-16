@@ -19,9 +19,9 @@
 | 入口 | 本地地址 | 面向谁 | 当前能力 |
 | --- | --- | --- | --- |
 | 用户工作台 | `http://localhost:5173` | 产品经理、技术总监、开发、测试、运维及系统管理员 | 项目协作主界面；登录后按角色展示导航和允许的操作。所有业务角色使用这里登录。 |
-| 管理/API 入口 | `http://localhost:8080/swagger-ui.html` | 系统管理员及开发运维 | 若依后端 API 文档与接口调试入口；用户、角色、菜单、权限等管理 API 仍在。**Beta 暂无独立的可视化若依系统管理前端**，Swagger 不是完整的管理后台。 |
+| 管理/API 入口 | `http://localhost:8080/swagger-ui.html` | 系统管理员及开发运维 | 若依管理 API；Swagger 默认关闭，可在本机通过 `HETU_SWAGGER_ENABLED=true` 临时启用。**Beta 暂无独立的可视化若依系统管理前端**。 |
 
-系统管理员也从用户工作台登录；若依管理权限和河图业务角色由后端权限校验。前端隐藏无权入口，后端接口会再次检查权限。业务角色账号如下，初始密码均为 `admin123`，仅限本地演示：
+系统管理员也从用户工作台登录；若依管理权限和河图业务角色由后端权限校验。前端隐藏无权入口，后端接口会再次检查权限。以下账号仅在显式导入 `sql/hetu_demo_users.sql` 的本地演示库中启用，初始密码均为 `admin123`，严禁用于共享或生产环境：
 
 | 账号 | 角色 | 主要职责 |
 | --- | --- | --- |
@@ -41,16 +41,17 @@
 
 需要 Java 17+、Maven 3.9+、Node.js 20+ 和 MySQL 8。无需安装 Docker；可以直接使用本机已有的 MySQL 客户端和数据库，不启动 Redis。
 
-1. 配置已有 MySQL 连接。环境变量为 `HETU_DB_URL`、`HETU_DB_USERNAME` 和 `HETU_DB_PASSWORD`。新建空库时先初始化若依基础表，再导入 `sql/hetu.sql`；已有河图数据库无需重导基础数据，应用启动时会自动补齐本次新增的字段和表。若需启用 Druid 监控页，再配置 `DRUID_STAT_ENABLED=true`、`DRUID_STAT_USERNAME` 和 `DRUID_STAT_PASSWORD`。
+1. 配置已有 MySQL 连接。环境变量为 `HETU_DB_URL`、`HETU_DB_USERNAME` 和 `HETU_DB_PASSWORD`。新建空库时先初始化若依基础表，再导入 `sql/hetu.sql`；已有河图数据库无需重导基础数据，应用启动时会自动补齐本次新增的字段和表。登录验证码在初始化库中默认开启。**仅本机演示**可额外导入 `sql/hetu_demo_users.sql` 启用弱口令演示账号。
 
 2. 构建并启动后端（本机单进程开发模式使用内存缓存）：
 
    ```sh
+   export HETU_TOKEN_SECRET="$(openssl rand -base64 64)"
    mvn -DskipTests package
    java -jar ruoyi-admin/target/ruoyi-admin.jar --app.cache.in-memory=true
    ```
 
-   API 在 `http://localhost:8080`。Swagger 文档在 `http://localhost:8080/swagger-ui.html`。
+   API 在 `http://localhost:8080`。若本地需要 Swagger，启动前设置 `HETU_SWAGGER_ENABLED=true`；公网默认不提供 Swagger。
 
 3. 启动用户工作台：
 
@@ -60,7 +61,13 @@
    npm run dev
    ```
 
-   打开 `http://localhost:5173`。前端会把 `/api` 请求代理到 Spring Boot；本地演示数据库默认关闭验证码以便试用；部署到共享或生产环境前请在若依系统参数中重新开启。
+   打开 `http://localhost:5173`。前端会把 `/api` 请求代理到 Spring Boot；登录页不再预填用户名或密码。
+
+Compose 默认只把 MySQL 和 Redis 绑定到 `127.0.0.1`。启动纯数据库：`docker compose up -d mysql redis`。如需本机角色演示账号，使用 `docker compose -f compose.yaml -f compose.demo.yaml up -d mysql redis`；该覆盖文件会导入弱口令用户，只能用于本地隔离演示数据库。
+
+公网部署必须使用 `prod` profile（例如 `--spring.profiles.active=prod,druid`），并提供 `HETU_TOKEN_SECRET`（至少 64 个随机 UTF-8 字节）、`HETU_DB_URL`、`HETU_DB_USERNAME`、`HETU_DB_PASSWORD`、`HETU_REDIS_HOST`、`HETU_REDIS_PASSWORD` 和明确的 `HETU_CORS_ALLOWED_ORIGINS`。生产 profile 强制关闭 Swagger；不要导入演示用户 SQL。基础 SQL 中的 `admin`、`ry` 账号默认禁用。首次开放公网前，由数据库管理员为 `admin` 设置唯一随机密码的 BCrypt 哈希后再启用该账号；例如可在受控终端使用 `htpasswd -nB admin` 交互生成哈希，再通过受保护的数据库连接更新 `sys_user.password` 并设置 `status='0'`。验证码须保持开启，注册须保持关闭。HTTPS 应由受管反向代理终止，并限制管理 API 和数据库只允许可信网络访问。
+
+基础 SQL 不再设置 `123456` 的用户导入初始密码，`sys.user.initPassword` 默认为空。使用若依批量导入用户前，管理员应先通过受保护的数据库连接将其设为一次性强密码，并要求用户首次登录后修改。
 
 内存缓存用于单机开发，令牌、验证码和缓存数据会在应用重启后丢失。业务字段升级也可用 MySQL 客户端手动执行 [`sql/hetu_core_capabilities.sql`](sql/hetu_core_capabilities.sql)。
 
@@ -96,7 +103,7 @@
 
 ## 数据库和接口
 
-`sql/hetu.sql` 创建项目、需求、任务、进度历史、缺陷、版本、评论、附件元数据和操作日志表；并初始化河图菜单、五个业务角色及演示账号。所有业务数据持久化在 MySQL，表使用 `utf8mb4`。上传图片放在若依配置的数据目录下。
+`sql/hetu.sql` 创建项目、需求、任务、进度历史、缺陷、版本、评论、附件元数据和操作日志表，并初始化河图菜单及五个业务角色。演示账号单独放在 `sql/hetu_demo_users.sql`，所有业务数据持久化在 MySQL，表使用 `utf8mb4`。上传图片放在若依配置的数据目录下。
 
 主要业务 API 位于 `/hetu`，以若依 token 认证并由 `@ss.hasPermi` 校验权限：
 
@@ -119,9 +126,10 @@ npm --prefix hetu-ui run build
 mvn -DskipTests package
 ```
 
-端到端测试脚本会创建真实需求、前后端任务、工时记录、测试退回与通过、各严重度的扣分和免扣分缺陷，以及两轮版本发布和产品验收。它需要一个已经初始化河图 SQL、关闭登录验证码的**一次性测试数据库**，且初始演示账号密码均为 `admin123`：
+端到端测试脚本会创建真实需求、前后端任务、工时记录、测试退回与通过、各严重度的扣分和免扣分缺陷，以及两轮版本发布和产品验收。它需要一个已导入 `sql/hetu_demo_users.sql` 并仅供测试使用的**一次性数据库**。仅在该隔离库内临时关闭验证码：
 
 ```sh
+mysql -u root -p ry-vue -e "UPDATE sys_config SET config_value='false' WHERE config_key='sys.account.captchaEnabled'"
 python3 scripts/e2e_workflow.py http://localhost:8080
 ```
 

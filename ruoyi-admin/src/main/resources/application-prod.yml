@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    druid:
+      statViewServlet:
+        enabled: false
+      master:
+        url: ${HETU_DB_URL}
+        username: ${HETU_DB_USERNAME}
+        password: ${HETU_DB_PASSWORD}
+  data:
+    redis:
+      host: ${HETU_REDIS_HOST}
+      port: ${HETU_REDIS_PORT:6379}
+      password: ${HETU_REDIS_PASSWORD}
+  devtools:
+    restart:
+      enabled: false
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+hetu:
+  cors:
+    allowed-origins: ${HETU_CORS_ALLOWED_ORIGINS}
+logging:
+  level:
+    com.ruoyi: INFO

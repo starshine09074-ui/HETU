@@ -1,0 +1,4 @@
+services:
+  mysql:
+    volumes:
+      - ./sql/hetu_demo_users.sql:/docker-entrypoint-initdb.d/03-demo-users.sql:ro
