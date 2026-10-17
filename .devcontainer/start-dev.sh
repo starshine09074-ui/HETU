@@ -22,8 +22,8 @@ if ! curl --silent --fail http://127.0.0.1:5173/ >/dev/null; then
   if [[ ! -x hetu-ui/node_modules/.bin/vite ]]; then
     npm --prefix hetu-ui ci
   fi
-  nohup npm --prefix hetu-ui run dev -- --host 0.0.0.0 \
-    > /tmp/hetu-frontend.log 2>&1 &
+  setsid -f npm --prefix hetu-ui run dev -- --host 0.0.0.0 \
+    </dev/null > /tmp/hetu-frontend.log 2>&1
 fi
 
 if [[ ! -f ruoyi-admin/target/ruoyi-admin.jar ]]; then
@@ -43,9 +43,8 @@ if [[ "$captcha_response" != *'"captchaEnabled"'* ]]; then
     fi
     rm -f /tmp/hetu-backend.pid
   fi
-  nohup java -jar ruoyi-admin/target/ruoyi-admin.jar \
-    > /tmp/hetu-backend.log 2>&1 &
-  echo $! > /tmp/hetu-backend.pid
+  setsid -f bash -c 'echo "$$" > /tmp/hetu-backend.pid; exec java -jar ruoyi-admin/target/ruoyi-admin.jar' \
+    </dev/null > /tmp/hetu-backend.log 2>&1
 fi
 
 for attempt in $(seq 1 30); do
@@ -54,7 +53,11 @@ for attempt in $(seq 1 30); do
   fi
   sleep 1
 done
-curl --silent --fail http://127.0.0.1:5173/ >/dev/null
+if ! curl --silent --fail http://127.0.0.1:5173/ >/dev/null; then
+  echo "Frontend did not become ready; recent log output:"
+  tail -80 /tmp/hetu-frontend.log
+  exit 1
+fi
 
 for attempt in $(seq 1 90); do
   captcha_response="$(curl --silent --max-time 2 http://127.0.0.1:8080/captchaImage 2>/dev/null || true)"
