@@ -4,6 +4,8 @@
 
 河图面向研发团队，目标是让“需求 → 任务 → 开发进度 → 提测 → 测试 → Bug → 修复验证 → 交付分析”形成可追踪闭环。后端以若依 RuoYi-Vue 3.9.2 为基础，业务接口独立在 `hetu-project` 模块；用户工作台使用 Vue 3、Element Plus 和 ECharts。
 
+GitHub Codespaces 启动、测试账号、CI 流程和故障排查见 [云端开发与测试说明](TESTING.md)。
+
 ## 系统截图
 
 ![河图登录页](hetu-ui/screenshot-login.png)

@@ -1,0 +1,48 @@
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/base:bookworm
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/HETU:cached
+    working_dir: /workspaces/HETU
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      HETU_DB_URL: jdbc:mysql://mysql:3306/ry-vue?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
+      HETU_DB_USERNAME: root
+      HETU_DB_PASSWORD: hetu-local-only
+      HETU_REDIS_HOST: redis
+      HETU_REDIS_PASSWORD: ""
+      HETU_CORS_ALLOWED_ORIGINS: http://localhost:5173
+      HETU_SWAGGER_ENABLED: "false"
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: hetu-local-only
+      MYSQL_DATABASE: ry-vue
+      TZ: Asia/Shanghai
+    volumes:
+      - hetu_codespaces_mysql:/var/lib/mysql
+      - ../sql/ry_20260417.sql:/docker-entrypoint-initdb.d/01-ruoyi.sql:ro
+      - ../sql/hetu.sql:/docker-entrypoint-initdb.d/02-hetu.sql:ro
+      - ../sql/hetu_demo_users.sql:/docker-entrypoint-initdb.d/03-demo-users.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7.4-alpine
+    volumes:
+      - hetu_codespaces_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  hetu_codespaces_mysql:
+  hetu_codespaces_redis:

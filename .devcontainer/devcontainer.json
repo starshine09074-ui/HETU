@@ -1,0 +1,39 @@
+{
+  "name": "Hetu development",
+  "dockerComposeFile": "compose.yaml",
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/HETU",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17",
+      "installMaven": true,
+      "mavenVersion": "3.9.9"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install --yes default-mysql-client && npm --prefix hetu-ui ci && mvn -B -DskipTests package",
+  "postStartCommand": "bash .devcontainer/start-dev.sh",
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Hetu user workspace",
+      "onAutoForward": "openPreview"
+    },
+    "8080": {
+      "label": "Hetu backend API (private)",
+      "onAutoForward": "ignore"
+    }
+  },
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "Vue.volar",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}
