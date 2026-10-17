@@ -81,7 +81,7 @@ python3 scripts/e2e_workflow.py http://localhost:8080
 ## 故障排查与停止资源
 
 - 前端无法连接 API：确认后端已启动；在 Codespaces 中访问前端时使用 `/api` 代理，API 端口不需要公开转发。
-- 后端启动失败：查看 `/tmp/hetu-backend.log`，确认 MySQL/Redis 健康、`HETU_TOKEN_SECRET` 至少 64 字节，且 JDBC 主机名在当前环境可解析。Compose 启动的服务名是 `mysql` 和 `redis`；本机终端运行时才使用 `127.0.0.1`。
+- 后端启动失败：查看 `/tmp/hetu-backend.log`，确认 MySQL/Redis 健康、`HETU_TOKEN_SECRET` 至少 64 字节，且 JDBC 主机名在当前环境可解析。Compose 启动的服务名是 `mysql` 和 `redis`；本机终端运行时才使用 `127.0.0.1`。验证码接口若报 `Could not initialize class sun.awt.X11FontManager`，请确认 Dev Container 安装了 `fontconfig` 和 `fonts-dejavu-core`，然后重建容器。
 - 登录失败：开发默认开启验证码；确认输入图片中的算式结果。测试脚本若提示验证码开启，只能在全新、隔离的测试数据库中按上方命令关闭。
 - 初始化 SQL 只在 MySQL 数据卷首次创建时自动导入。已有卷不会重复执行；只在本地一次性测试数据可丢弃时才用 `docker compose -f compose.yaml -f compose.demo.yaml down -v` 重建。`-v` 会永久删除这个 Compose 项目的数据库和 Redis 数据。
 - 停止 Codespaces：在 Codespaces 页面选择 **Stop codespace**；这会停止整个开发环境，数据库数据卷会保留。重新打开 Codespace 时容器自动恢复。

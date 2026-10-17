@@ -13,7 +13,7 @@
       "version": "20"
     }
   },
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install --yes default-mysql-client && npm --prefix hetu-ui ci && mvn -B -DskipTests package",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install --yes default-mysql-client fontconfig fonts-dejavu-core && npm --prefix hetu-ui ci && mvn -B -DskipTests package",
   "postStartCommand": "bash .devcontainer/start-dev.sh",
   "forwardPorts": [5173],
   "portsAttributes": {
