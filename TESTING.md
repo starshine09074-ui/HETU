@@ -100,4 +100,4 @@ python3 scripts/e2e_workflow.py http://localhost:8080
 - `scripts/e2e_workflow.py`：146 项断言通过，覆盖需求至发布闭环、失败/通过测试、缺陷扣分/免扣分及发布验收。
 - Dev Container CLI 0.89.0 成功解析 `.devcontainer/devcontainer.json`；Vite 接受当前 Codespace 的 HTTPS 转发域名并以 HTTP 403 拒绝不受信任 Host；后端 CORS 预检允许该 Codespace 域名并拒绝任意外部域名。
 
-GitHub Actions 已在提交 `c26ef1d` 上实际通过：4 项 Java 单元测试、前后端构建、4 项 HTTP 冒烟和 146 项业务流程断言全部成功。Dev Container CLI 的完整 `up` 未能在本执行环境完成：Docker 构建容器无法访问 Java Feature 所需的 `get.sdkman.io` 下载站；Codespaces 自身构建需在 GitHub 环境里再验证。未运行或被基础设施阻断的检查不能标记为通过。
+GitHub Actions [run 39000030716](https://github.com/starshine09074-ui/HETU/actions/runs/39000030716) 在提交 `71d140d` 上通过：4 项 Java 单元测试、前后端构建、4 项 HTTP 冒烟和 146 项业务流程断言全部成功。Dev Container CLI 的完整 `up` 未能在本执行环境完成：Docker 构建容器无法访问 Java Feature 所需的 `get.sdkman.io` 下载站；Codespaces 自身构建需在 GitHub 环境里再验证。未运行或被基础设施阻断的检查不能标记为通过。
