@@ -62,8 +62,7 @@ public class SysLoginService
      */
     public String login(String username, String password, String code, String uuid)
     {
-        // 验证码校验
-        validateCaptcha(username, code, uuid);
+        // 河图工作台不启用验证码，直接进行账号密码校验。
         // 登录前置校验
         loginPreCheck(username, password);
         // 用户验证
